@@ -2,6 +2,12 @@
 from PyQt5.QtWidgets import QInputDialog, QFileDialog
 import os
 from PyQt5.QtCore import Qt
+import gettext
+import builtins
+
+def _(text):
+    """Return translated text if gettext is configured."""
+    return getattr(builtins, "_", gettext.gettext)(text)
 
 def add_act(window):
     """Add a new act using ProjectModel."""
@@ -30,6 +36,7 @@ def add_scene(window, chapter_item):
 
 def add_scene_from_file(window, chapter_item):
     """Add a new scene using a selected text or markdown file."""
+
     file_path, _ = QFileDialog.getOpenFileName(
         window,
         _("Import Scene from File"),
@@ -37,6 +44,7 @@ def add_scene_from_file(window, chapter_item):
         _("Text/Markdown Files (*.txt *.md)")
     )
     if file_path:
+
         scene_name = os.path.splitext(os.path.basename(file_path))[0]
         try:
             with open(file_path, "r", encoding="utf-8") as f:

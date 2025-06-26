@@ -36,11 +36,15 @@ def add_scene(window, chapter_item):
 
 def add_scene_from_file(window, chapter_item):
     """Add a new scene using a selected text or markdown file."""
-    dialog = QFileDialog(window, _("Import Scene from File"))
-    dialog.setFileMode(QFileDialog.ExistingFile)
-    dialog.setNameFilter(_("Text/Markdown Files (*.txt *.md)"))
-    if dialog.exec_() == QFileDialog.Accepted:
-        file_path = dialog.selectedFiles()[0]
+
+    file_path, _ = QFileDialog.getOpenFileName(
+        window,
+        _("Import Scene from File"),
+        "",
+        _("Text/Markdown Files (*.txt *.md)")
+    )
+    if file_path:
+
         scene_name = os.path.splitext(os.path.basename(file_path))[0]
         try:
             with open(file_path, "r", encoding="utf-8") as f:

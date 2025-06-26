@@ -1,5 +1,5 @@
 from gettext import pgettext
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QTreeWidget, QMenu, 
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QTreeWidget, QMenu,
                              QMessageBox, QInputDialog, QHeaderView)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QFont, QBrush
@@ -173,6 +173,7 @@ class ProjectTreeWidget(QWidget):
                 menu.addAction(_("Add Chapter"), lambda: psm.add_chapter(self.controller, item))
             elif level == 1:
                 menu.addAction(_("Add Scene"), lambda: psm.add_scene(self.controller, item))
+                menu.addAction(_("Import Scene from File"), lambda: psm.add_scene_from_file(self.controller, item))
             if level >= 2:
                 status_menu = menu.addMenu(_("Set Scene Status"))
                 for english_status, translated_status in self.STATUS_MAP.items():

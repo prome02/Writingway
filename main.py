@@ -45,7 +45,7 @@ translation_manager.set_language(WWSettingsManager.get_general_settings().get("l
 check_dependencies()
 
 from PyQt5.QtWidgets import QApplication
-from workbench import WorkbenchWindow
+from workbench import WorkbenchWindow, PROJECTS_DATA, LAST_OPENED_KEY
 from settings.theme_manager import ThemeManager
 
 def writingway_preload_settings(app):
@@ -65,7 +65,12 @@ def main():
     app = QApplication(sys.argv)
     writingway_preload_settings(app)
     window = WorkbenchWindow(translation_manager)
-    window.show()
+    last_project = PROJECTS_DATA.get(LAST_OPENED_KEY)
+    if last_project:
+        window.open_project(last_project)
+        window.hide()
+    else:
+        window.show()
     sys.exit(app.exec_())
 
 if __name__ == "__main__":

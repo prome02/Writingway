@@ -19,6 +19,8 @@ from compendium.enhanced_compendium import EnhancedCompendiumWindow
 PROJECTS_FILE = "projects.json"
 # Define a key for the last displayed project
 LAST_DISPLAYED_KEY = "last_displayed_project"
+# Define a key for the last opened project
+LAST_OPENED_KEY = "last_opened_project"
 # Load version display
 VERSION_FILE = "version.json"
 
@@ -49,7 +51,8 @@ def load_projects():
             {"name": "Sci-Fi Epic", "cover": None},
             {"name": "Mystery Novel", "cover": None},
         ],
-        LAST_DISPLAYED_KEY: None
+        LAST_DISPLAYED_KEY: None,
+        LAST_OPENED_KEY: None,
     }
     if os.path.exists(filepath):
         try:
@@ -57,7 +60,9 @@ def load_projects():
                 data = json.load(f)
                 # Ensure compatibility with older files
                 if isinstance(data, list):
-                    return {LAST_DISPLAYED_KEY: None, "projects": data}
+                    return {LAST_DISPLAYED_KEY: None, LAST_OPENED_KEY: None, "projects": data}
+                data.setdefault(LAST_OPENED_KEY, None)
+                data.setdefault(LAST_DISPLAYED_KEY, None)
                 return data
         except Exception as e:
             QMessageBox.warning(None, _("Load Projects Error"),
@@ -590,6 +595,7 @@ class WorkbenchWindow(QMainWindow):
 
         self.last_opened_project = project_name
         PROJECTS_DATA[LAST_DISPLAYED_KEY] = project_name
+        PROJECTS_DATA[LAST_OPENED_KEY] = project_name
         save_projects(PROJECTS_DATA)
         self.project_window = ProjectWindow(project_name, self.enhanced_compendium)
         self.open_project_windows[project_name] = self.project_window

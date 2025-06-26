@@ -1143,6 +1143,15 @@ msgstr "添加场景"
 msgid "Enter scene name:"
 msgstr "输入场景名称："
 
+#: project_window/project_structure_manager.py:31
+#: project_window/project_tree_widget.py:174
+msgid "Import Scene from File"
+msgstr ""
+
+#: project_window/project_structure_manager.py:33
+msgid "Text/Markdown Files (*.txt *.md)"
+msgstr ""
+
 #: project_window/project_structure_manager.py:34
 msgid "Enter new name:"
 msgstr "输入新名称："

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from PyQt5.QtWidgets import QInputDialog
+from PyQt5.QtWidgets import QInputDialog, QFileDialog
+import os
 from PyQt5.QtCore import Qt
 
 def add_act(window):
@@ -26,6 +27,30 @@ def add_scene(window, chapter_item):
         act_name = act_item.text(0)
         window.model.add_scene(act_name, chapter_name, text.strip())  # Delegate to ProjectModel
         # No need to update the tree here; ProjectModel emits structureChanged
+
+def add_scene_from_file(window, chapter_item):
+    """Add a new scene using a selected text or markdown file."""
+    file_path, _ = QFileDialog.getOpenFileName(
+        window,
+        _("Import Scene from File"),
+        "",
+        _("Text/Markdown Files (*.txt *.md)")
+    )
+    if file_path:
+        scene_name = os.path.splitext(os.path.basename(file_path))[0]
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception as e:
+            window.model.errorOccurred.emit(str(e))
+            return
+        chapter_name = chapter_item.text(0)
+        act_item = chapter_item.parent()
+        act_name = act_item.text(0)
+        window.model.add_scene(act_name, chapter_name, scene_name)
+        hierarchy = [act_name, chapter_name, scene_name]
+        window.model.save_scene(hierarchy, content)
+        # StructureChanged emitted by model.add_scene
 
 def rename_item(window, item):
     """Rename a tree item and sync via ProjectModel."""

@@ -1103,6 +1103,15 @@ msgstr "Добавить сцену"
 msgid "Enter scene name:"
 msgstr "Введите имя сцены:"
 
+#: project_window/project_structure_manager.py:31
+#: project_window/project_tree_widget.py:174
+msgid "Import Scene from File"
+msgstr ""
+
+#: project_window/project_structure_manager.py:33
+msgid "Text/Markdown Files (*.txt *.md)"
+msgstr ""
+
 #: project_window/project_structure_manager.py:34
 msgid "Enter new name:"
 msgstr "Введите новое имя:"

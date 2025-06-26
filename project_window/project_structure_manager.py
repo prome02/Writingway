@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
+import gettext
 from PyQt5.QtWidgets import QInputDialog, QFileDialog
 import os
 from PyQt5.QtCore import Qt
-import gettext
 import builtins
 
-def _(text):
-    """Return translated text if gettext is configured."""
-    return getattr(builtins, "_", gettext.gettext)(text)
+if not hasattr(builtins, "_"):
+    builtins._ = gettext.gettext
+_ = builtins._
+
 
 def add_act(window):
     """Add a new act using ProjectModel."""
@@ -15,6 +16,7 @@ def add_act(window):
     if ok and text.strip():
         window.model.add_act(text.strip())  # Delegate to ProjectModel
         # No need to update the tree here; ProjectModel emits structureChanged
+
 
 def add_chapter(window, act_item):
     """Add a new chapter using ProjectModel."""
@@ -24,6 +26,7 @@ def add_chapter(window, act_item):
         window.model.add_chapter(act_name, text.strip())  # Delegate to ProjectModel
         # No need to update the tree here; ProjectModel emits structureChanged
 
+
 def add_scene(window, chapter_item):
     """Add a new scene using ProjectModel."""
     text, ok = QInputDialog.getText(window, _("Add Scene"), _("Enter scene name:"))
@@ -31,20 +34,20 @@ def add_scene(window, chapter_item):
         chapter_name = chapter_item.text(0)
         act_item = chapter_item.parent()
         act_name = act_item.text(0)
-        window.model.add_scene(act_name, chapter_name, text.strip())  # Delegate to ProjectModel
+        window.model.add_scene(
+            act_name, chapter_name, text.strip()
+        )  # Delegate to ProjectModel
         # No need to update the tree here; ProjectModel emits structureChanged
+
 
 def add_scene_from_file(window, chapter_item):
     """Add a new scene using a selected text or markdown file."""
 
-    file_path, _ = QFileDialog.getOpenFileName(
-        window,
-        _("Import Scene from File"),
-        "",
-        _("Text/Markdown Files (*.txt *.md)")
+    result = QFileDialog.getOpenFileName(
+        window, _("Import Scene from File"), "", _("Text/Markdown Files (*.txt *.md)")
     )
+    file_path = result[0]
     if file_path:
-
         scene_name = os.path.splitext(os.path.basename(file_path))[0]
         try:
             with open(file_path, "r", encoding="utf-8") as f:
@@ -60,15 +63,18 @@ def add_scene_from_file(window, chapter_item):
         window.model.save_scene(hierarchy, content)
         # StructureChanged emitted by model.add_scene
 
+
 def rename_item(window, item):
     """Rename a tree item and sync via ProjectModel."""
     current_name = item.text(0)
     new_name, ok = QInputDialog.getText(
-        window, _("Rename"), _("Enter new name:"), text=current_name)
+        window, _("Rename"), _("Enter new name:"), text=current_name
+    )
     if ok and new_name.strip():
         hierarchy = window.get_item_hierarchy(item)
         window.model.rename_node(hierarchy, new_name.strip())
         # Tree will update via structureChanged signal
+
 
 def move_item_up(window, item):
     """Move an item up in the tree."""
@@ -82,8 +88,9 @@ def move_item_up(window, item):
         uuid = item.data(0, Qt.UserRole)["uuid"]
 
         window.model.update_structure(window.project_tree.tree)
-#        tree_manager.update_structure_from_tree(window.project_tree.tree, window.model.project_name)
+        #        tree_manager.update_structure_from_tree(window.project_tree.tree, window.model.project_name)
         window.model.structureChanged.emit(hierarchy, uuid)
+
 
 def move_item_down(window, item):
     """Move an item down in the tree."""
@@ -96,6 +103,5 @@ def move_item_down(window, item):
         hierarchy = window.get_item_hierarchy(item)
         uuid = item.data(0, Qt.UserRole)["uuid"]
         window.model.update_structure(window.project_tree.tree)
-#        tree_manager.update_structure_from_tree(window.project_tree.tree, window.model.project_name)
+        #        tree_manager.update_structure_from_tree(window.project_tree.tree, window.model.project_name)
         window.model.structureChanged.emit(hierarchy, uuid)
-

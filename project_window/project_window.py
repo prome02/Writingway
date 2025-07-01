@@ -35,7 +35,7 @@ from util.whisper_app import WhisperApp
 from util.ia_window import IAWindow
 from muse.prompts_window import PromptsWindow
 from .token_limit_dialog import TokenLimitDialog
-from gettext import pgettext
+from gettext import pgettext, gettext as _
 import muse.prompt_handler as prompt_handler
 
 # Set the path to PyQt5 plugins

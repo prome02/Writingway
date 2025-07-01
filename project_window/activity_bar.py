@@ -3,6 +3,9 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
 from settings.theme_manager import ThemeManager
 
+# Dummy translation function if not using gettext or similar
+def _(s): return s
+
 class ActivityBar(QWidget):
     """Vertical icon panel for switching between views, similar to VS Code Activity Bar."""
     def __init__(self, controller, tint_color=QColor("black"), position="left"):

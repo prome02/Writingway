@@ -5,6 +5,7 @@ import tiktoken
 import re
 import logging
 import threading
+import traceback
 
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QSplitter, QLabel, QShortcut, 
                              QMessageBox, QInputDialog, QApplication, QDialog,
@@ -74,71 +75,84 @@ class ProjectWindow(QMainWindow):
         self.global_toolbar.toolbar.show()
 
     def init_ui(self):
-        self.setWindowTitle(_("Project: {}").format(self.model.project_name))
-        self.resize(900, 600)
+        try:
+            self.setWindowTitle(_("Project: {}").format(self.model.project_name))
+            self.resize(900, 600)
 
-        self.setup_status_bar()
+            self.setup_status_bar()
 
-        self.global_toolbar = GlobalToolbar(self, self.icon_tint)
-        self.addToolBar(self.global_toolbar.toolbar)
+            self.global_toolbar = GlobalToolbar(self, self.icon_tint)
+            self.addToolBar(self.global_toolbar.toolbar)
 
-        main_widget = QWidget()
-        main_layout = QHBoxLayout(main_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+            main_widget = QWidget()
+            main_layout = QHBoxLayout(main_widget)
+            main_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.main_splitter = QSplitter(Qt.Horizontal)
-        main_layout.addWidget(self.main_splitter)
+            self.main_splitter = QSplitter(Qt.Horizontal)
+            main_layout.addWidget(self.main_splitter)
 
-        # Left side: Activity Bar + Side Bar
-        self.left_widget = QWidget()
-        left_layout = QHBoxLayout(self.left_widget)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(0)
+            # Left side: Activity Bar + Side Bar
+            self.left_widget = QWidget()
+            left_layout = QHBoxLayout(self.left_widget)
+            left_layout.setContentsMargins(0, 0, 0, 0)
+            left_layout.setSpacing(0)
 
-        self.activity_bar = ActivityBar(self, self.icon_tint, position="left")
-        left_layout.addWidget(self.activity_bar)
-        self.scene_editor = SceneEditor(self, self.icon_tint)
+            self.activity_bar = ActivityBar(self, self.icon_tint, position="left")
+            left_layout.addWidget(self.activity_bar)
+            self.scene_editor = SceneEditor(self, self.icon_tint)
 
 
-        self.side_bar = QStackedWidget()
-        self.side_bar.setMinimumWidth(200)
-        self.project_tree = ProjectTreeWidget(self, self.model)
-        self.search_panel = SearchReplacePanel(self, self.model, self.icon_tint)
-        self.compendium_panel = CompendiumPanel(self, enhanced_window=self.enhanced_window)
-        self.prompts_panel = EmbeddedPromptsPanel(self.model.project_name, self)
-        self.content_view_panel = ContentViewPanel(self._get_content_view_data())
-        self.side_bar.addWidget(self.project_tree)
-        self.side_bar.addWidget(self.search_panel)
-        self.side_bar.addWidget(self.compendium_panel)
-        self.side_bar.addWidget(self.prompts_panel)
-        self.side_bar.addWidget(self.content_view_panel)
-        left_layout.addWidget(self.side_bar)
+            self.side_bar = QStackedWidget()
+            self.side_bar.setMinimumWidth(200)
+            self.project_tree = ProjectTreeWidget(self, self.model)
+            self.search_panel = SearchReplacePanel(self, self.model, self.icon_tint)
+            self.compendium_panel = CompendiumPanel(self, enhanced_window=self.enhanced_window)
+            self.prompts_panel = EmbeddedPromptsPanel(self.model.project_name, self)
+            self.content_view_panel = ContentViewPanel(self._get_content_view_data())
+            self.side_bar.addWidget(self.project_tree)
+            self.side_bar.addWidget(self.search_panel)
+            self.side_bar.addWidget(self.compendium_panel)
+            self.side_bar.addWidget(self.prompts_panel)
+            self.side_bar.addWidget(self.content_view_panel)
+            left_layout.addWidget(self.side_bar)
 
-        self.main_splitter.addWidget(self.left_widget)
+            self.main_splitter.addWidget(self.left_widget)
 
-        right_vertical_splitter = QSplitter(Qt.Vertical)
-        self.compendium_editor = QTextEdit()
-        self.compendium_editor.setReadOnly(True)
-        self.compendium_editor.setPlaceholderText(_("Select a compendium entry to view..."))
-        self.prompts_editor = self.prompts_panel.editor_widget
-        self.editor_stack = QStackedWidget()
-        self.editor_stack.addWidget(self.scene_editor)
-        self.editor_stack.addWidget(self.compendium_editor)
-        self.editor_stack.addWidget(self.prompts_editor)
-        self.bottom_stack = BottomStack(self, self.model, self.icon_tint)
-        self.bottom_stack.preview_text.textChanged.connect(self.on_preview_text_changed)
+            right_vertical_splitter = QSplitter(Qt.Vertical)
+            self.compendium_editor = QTextEdit()
+            self.compendium_editor.setReadOnly(True)
+            self.compendium_editor.setPlaceholderText(_("Select a compendium entry to view..."))
+            self.prompts_editor = self.prompts_panel.editor_widget
+            self.blank_editor_page = QWidget()
+            self.editor_stack = QStackedWidget()
+            self.editor_stack.addWidget(self.scene_editor)
+            self.editor_stack.addWidget(self.compendium_editor)
+            self.editor_stack.addWidget(self.prompts_editor)
+            self.editor_stack.addWidget(self.blank_editor_page)
+            self.bottom_stack = BottomStack(self, self.model, self.icon_tint)
+            self.bottom_stack.preview_text.textChanged.connect(self.on_preview_text_changed)
 
-        right_vertical_splitter.addWidget(self.editor_stack)
-        right_vertical_splitter.addWidget(self.bottom_stack)
-        right_vertical_splitter.setStretchFactor(0, 3)
-        right_vertical_splitter.setStretchFactor(1, 1)
+            right_vertical_splitter.addWidget(self.editor_stack)
+            right_vertical_splitter.addWidget(self.bottom_stack)
+            right_vertical_splitter.setStretchFactor(0, 3)
+            right_vertical_splitter.setStretchFactor(1, 1)
 
-        self.main_splitter.addWidget(right_vertical_splitter)
-        self.main_splitter.setStretchFactor(0, 1)
-        self.main_splitter.setStretchFactor(1, 3)
-        self.main_splitter.setHandleWidth(10)
-        self.main_splitter.splitterMoved.connect(self.update_sidebar_width)
-        self.setCentralWidget(main_widget)
+            self.main_splitter.addWidget(right_vertical_splitter)
+            self.main_splitter.setStretchFactor(0, 1)
+            self.main_splitter.setStretchFactor(1, 3)
+            self.main_splitter.setHandleWidth(10)
+            self.main_splitter.splitterMoved.connect(self.update_sidebar_width)
+            self.setCentralWidget(main_widget)
+        except Exception as e:
+            logging.error("Failed to initialize ProjectWindow UI", exc_info=True)
+            error_details = traceback.format_exc()
+            QMessageBox.critical(
+                self,
+                _("UI Initialization Error"),
+                _("A critical error occurred while setting up the project window:\n\n{}\n\nDetails:\n{}").format(
+                    str(e), error_details
+                )
+            )
 
     def update_sidebar_width(self, pos, index):
         """Update last_sidebar_width when the splitter is moved."""
@@ -218,6 +232,25 @@ class ProjectWindow(QMainWindow):
             self.left_widget.setMaximumWidth(50)
             self.bottom_stack.setVisible(True)
         self.activity_bar.prompts_action.setChecked(show)
+
+    def toggle_content_view(self, show):
+        self.side_bar.setVisible(show)
+        if show:
+            self.side_bar.setCurrentWidget(self.content_view_panel)
+            self.editor_stack.setCurrentWidget(self.blank_editor_page)
+            self.main_splitter.setSizes([self.last_sidebar_width, self.main_splitter.sizes()[1]])
+            self.main_splitter.setCollapsible(0, False)
+            self.left_widget.setMinimumWidth(250)
+            self.left_widget.setMaximumWidth(16777215)
+            self.bottom_stack.setVisible(False)
+        else:
+            self.last_sidebar_width = self.main_splitter.sizes()[0]
+            self.main_splitter.setSizes([50, self.main_splitter.sizes()[1]])
+            self.main_splitter.setCollapsible(0, True)
+            self.left_widget.setMinimumWidth(50)
+            self.left_widget.setMaximumWidth(50)
+            self.bottom_stack.setVisible(True)
+        self.activity_bar.content_view_action.setChecked(show)
 
     def setup_status_bar(self):
         self.setStatusBar(self.statusBar())

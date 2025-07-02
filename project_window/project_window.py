@@ -21,6 +21,7 @@ from .rewrite_feature import RewriteDialog
 from .activity_bar import ActivityBar
 from .search_replace_panel import SearchReplacePanel
 from .embedded_prompts_panel import EmbeddedPromptsPanel
+from project_window_ui import ContentViewPanel
 from compendium.compendium_panel import CompendiumPanel
 from util.tts_manager import WW_TTSManager
 from settings.backup_manager import show_backup_dialog
@@ -105,10 +106,12 @@ class ProjectWindow(QMainWindow):
         self.search_panel = SearchReplacePanel(self, self.model, self.icon_tint)
         self.compendium_panel = CompendiumPanel(self, enhanced_window=self.enhanced_window)
         self.prompts_panel = EmbeddedPromptsPanel(self.model.project_name, self)
+        self.content_view_panel = ContentViewPanel(self._get_content_view_data())
         self.side_bar.addWidget(self.project_tree)
         self.side_bar.addWidget(self.search_panel)
         self.side_bar.addWidget(self.compendium_panel)
         self.side_bar.addWidget(self.prompts_panel)
+        self.side_bar.addWidget(self.content_view_panel)
         left_layout.addWidget(self.side_bar)
 
         self.main_splitter.addWidget(self.left_widget)
@@ -913,6 +916,18 @@ class ProjectWindow(QMainWindow):
         """Clear search highlights when switching tools."""
         if hasattr(self, 'search_panel'):
             self.search_panel.clear_extra_selections()
+
+    def _get_content_view_data(self):
+        """Convert project structure to data for ContentViewPanel."""
+        data = []
+        structure = self.model.structure
+        for act in structure.get("acts", []):
+            chapters = []
+            for chapter in act.get("chapters", []):
+                scenes = [scene.get("name", "") for scene in chapter.get("scenes", [])]
+                chapters.append({"name": chapter.get("name", ""), "scenes": scenes})
+            data.append({"name": act.get("name", ""), "chapters": chapters})
+        return data
 
 if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication

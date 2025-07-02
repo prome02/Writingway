@@ -21,7 +21,7 @@ from .rewrite_feature import RewriteDialog
 from .activity_bar import ActivityBar
 from .search_replace_panel import SearchReplacePanel
 from .embedded_prompts_panel import EmbeddedPromptsPanel
-from project_window_ui import ContentViewPanel
+from project_window.project_window_ui import ContentViewPanel
 from compendium.compendium_panel import CompendiumPanel
 from util.tts_manager import WW_TTSManager
 from settings.backup_manager import show_backup_dialog
